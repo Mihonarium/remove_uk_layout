@@ -1,0 +1,37 @@
+name: Go Build with Admin Privileges
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build EXE
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.21'
+
+    - name: Download rsrc
+      run: Invoke-WebRequest -Uri "https://github.com/akavel/rsrc/releases/download/v0.10.2/rsrc_windows_386.exe" -OutFile "rsrc.exe"
+
+    - name: Build with rsrc
+      run: |
+        ./rsrc -manifest app.manifest -o rsrc.syso
+        go build -o remove_uk_keyboard_layout.exe
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: remove_uk_keyboard_layout
+        path: remove_uk_keyboard_layout.exe
